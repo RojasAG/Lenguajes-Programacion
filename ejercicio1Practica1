@@ -1,0 +1,49 @@
+/*
+1)	Haga un programa que cuente e indique el número de caracteres, el número de palabras y el número de líneas
+de un texto cualquiera (obtenido de cualquier forma que considere). Considere hacer el cálculo de las tres
+variables en el mismo proceso.
+
+*/
+
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+func main() {
+	textoDigitado := "Hola a todos, esto es una demostracion"
+	textoDigitado2 := "Hola a todos, esto es una demostracion," +
+		"\naqui va a haber mas lineas" +
+		"\ntodo es prueba"
+
+	fmt.Println("Caso 1")
+	// Aqui se cuentan la cantidad de caracteres que tiene la oracion digitada
+	numeroCaracteres := len(textoDigitado) //Con ayuda del len vemos la cantidad de caracteres
+	fmt.Println("Cantidad de caracteres: ", numeroCaracteres)
+
+	// Aqui se ven la cantidad de palabras que se encuentran en la oracion
+	palabrasContadas := strings.Fields(textoDigitado) //Se toma la oracion y se pasa por strings.Fields que lo que hace es dividir lo en palabras individuales
+	numPalabras := len(palabrasContadas)              //Luego de que se dividen se cuentan para saber cuantas palabras tiene
+	fmt.Println("Cantidad de palabras: ", numPalabras)
+
+	// Aqui se ven la cantidad de lineas existentes
+	lineasExistentes := strings.Split(textoDigitado, "\n") //Se usa strings.Split para realizar una separacion, en este caso el separador es \n que hace que se puedan contar lineas
+	numeroLineas := len(lineasExistentes)                  //Luego de ello se cuenta la cantidad de veces q se genero el separador para obtener la cantidad de lineas
+	fmt.Println("Cantidad de lineas existentes: ", numeroLineas)
+
+	/*----------------------------------------------------------------------------------------*/
+	fmt.Println("\nCaso 2") //Se repite lo mismo, como tipo prueba para corroborrar datos
+
+	numeroCaracteres2 := len(textoDigitado2)
+	fmt.Println("Cantidad de caracteres: ", numeroCaracteres2)
+
+	palabrasContadas2 := strings.Fields(textoDigitado2)
+	numPalabras2 := len(palabrasContadas2)
+	fmt.Println("Cantidad de palabras: ", numPalabras2)
+
+	lineasExistentes2 := strings.Split(textoDigitado2, "\n")
+	numeroLineas2 := len(lineasExistentes2)
+	fmt.Println("Cantidad de lineas existentes: ", numeroLineas2)
+}
