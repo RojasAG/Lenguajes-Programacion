@@ -1,0 +1,109 @@
+/*
+3)	Escriba una función que permita rotar una secuencia de elementos N posiciones a la izquierda o a 
+la derecha según sea el caso en función al parámetro que se reciba. Los parámetros deben ser un puntero 
+a un arreglo previamente creado, la cantidad de movimiento de rotación y la dirección (0 = izq y 1 = der).
+
+A partir de esta función, escriba un programa que haga varias rotaciones cualesquiera de una secuencia 
+de elementos previamente creada que sea inmutable. Al final debe imprimirse el resultado de cada rotación 
+además de la secuencia original.
+	Un ejemplo de rotación puede ser el siguiente:
+Secuencia Original = [a, b, c, d, e, f, g, h,]
+Cantidad de rotaciones = 3
+Dirección = izq
+Secuencia final rotada = [d, e, f, g, h, a, b, c]   Nótese que cada iteración, el elemento más a la izquierda 
+pasó a formar parte del final de la secuencia, si la rotación fuera a la derecha, sería lo contrario
+
+ */
+package main
+
+import "fmt"
+
+// Funcion que realiza la rotacion
+func rotado(secuencia *[]interface{}, n int, dir int) {
+	longitud := len(*secuencia)           //Verifica para ver el tamano del dato ingresado
+	if longitud == 0 || n%longitud == 0 { //Se hace una verificacion de datos a ver si los datos son cero o no
+		return
+	}
+	if n < 0 {
+		n = longitud - (-n % longitud)
+	} else {
+		n = n % longitud
+	}
+	if dir == 0 { // se hace la rotación a la izquierda
+		*secuencia = append((*secuencia)[n:], (*secuencia)[:n]...)
+	} else { // se hace la rotación a la derecha
+		*secuencia = append((*secuencia)[longitud-n:], (*secuencia)[:longitud-n]...)
+	}
+}
+
+func main() {
+	// Se crean varias secuencias para distintas pruebas del codigo
+	original1 := []interface{}{"a", "b", "c", "d", "e", "f", "g", "h"}
+	original2 := []interface{}{"ab", "bx", "cv", "dx", "ex", "fx", "gv", "he"}
+	original3 := []interface{}{"ea", "tb", "uc", "id", "je", "hf", "gg", "fh"}
+
+	var numero int
+	fmt.Println("Cual secuencia desea elegir: ")
+	fmt.Println("1 ", original1)
+	fmt.Println("2 ", original2)
+	fmt.Println("3 ", original3)
+	fmt.Scanln(&numero)
+
+	//Se usa un switch con el unico fin de oder usar distintos datos
+	switch numero {
+	case 1:
+		fmt.Printf("Secuencia original: %v\n", original1)
+		//Se realizan varias rotaciones a la version original
+		numeroRotaciones := []int{3, 2, 4} //se refiere a la cantidad y numeros a usar para las rotaciones
+		direccion := []int{0, 1, 0}        //Se refiere a si es derecha o izquierda
+
+		for i := 0; i < len(numeroRotaciones); i++ { //Se genera un ciclo para recorrer el arreglo
+			rotado(&original1, numeroRotaciones[i], direccion[i]) // se usa la funcion de rotado y se hace la rotacion
+			fmt.Printf("Cantidad de rotaciones: %d\n", numeroRotaciones[i])
+			if direccion[i] == 0 {
+				fmt.Printf("Dirección: izq\n")
+			} else {
+				fmt.Printf("Dirección: der\n")
+			}
+			fmt.Printf("Secuencia final rotada: %v\n\n", original1)
+		}
+
+	case 2:
+		fmt.Printf("Secuencia original: %v\n", original2)
+		//Se realizan varias rotaciones a la version original
+		numeroRotaciones := []int{3, 2, 4}
+		direccion := []int{0, 1, 0}
+
+		for i := 0; i < len(numeroRotaciones); i++ {
+			rotado(&original2, numeroRotaciones[i], direccion[i])
+			fmt.Printf("Cantidad de rotaciones: %d\n", numeroRotaciones[i])
+			if direccion[i] == 0 {
+				fmt.Printf("Dirección: izq\n")
+			} else {
+				fmt.Printf("Dirección: der\n")
+			}
+			fmt.Printf("Secuencia final rotada: %v\n\n", original2)
+		}
+
+	case 3:
+		fmt.Printf("Secuencia original: %v\n", original3)
+		//Se realizan varias rotaciones a la version original
+		numeroRotaciones := []int{3, 2, 4}
+		direccion := []int{0, 1, 0}
+
+		for i := 0; i < len(numeroRotaciones); i++ {
+			rotado(&original3, numeroRotaciones[i], direccion[i])
+			fmt.Printf("Cantidad de rotaciones: %d\n", numeroRotaciones[i])
+			if direccion[i] == 0 {
+				fmt.Printf("Dirección: izq\n")
+			} else {
+				fmt.Printf("Dirección: der\n")
+			}
+			fmt.Printf("Secuencia final rotada: %v\n\n", original3)
+		}
+
+	default:
+		fmt.Println("El número no es 1, 2 o 3")
+	}
+
+}
