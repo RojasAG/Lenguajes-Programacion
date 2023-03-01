@@ -1,0 +1,36 @@
+/*
+2)	Escriba el programa más eficiente que pueda para imprimir en pantalla la siguiente figura:
+
+Para dicho fin, escriba y use una función que reciba de parámetro la cantidad de elementos de la línea del centro, la cual debe ser impar positiva.
+*/
+package main
+
+import (
+	"fmt"
+	"math"
+)
+
+// Funcion que permite el imprimir de la figura por medio de asteriscos
+func imprimirFigura(n int) {
+	if n%2 == 0 { //Se realiza la comprobacion del dato ingresado, ya que si no es par el numero, no es posible crear la figura que en este caso es un rombo
+		fmt.Println("Error ingrese un numero impar")
+		return
+	}
+
+	for i := 0; i < n; i++ { //Se realiza un ciclo para ir dejando los espacios en blanco
+		for j := 0; j < int(math.Abs(float64(n/2-i))); j++ {
+			fmt.Print(" ")
+		}
+		for k := 0; k < n-2*int(math.Abs(float64(n/2-i))); k++ { //Y esta otra va poniendo los asteriscos segun corresponde
+			fmt.Print("*")
+		}
+		fmt.Println() //Esto va dando los saltos de linea para que se forme la figura si no, quedara todo en la misma linea
+	}
+}
+
+func main() {
+	var numero int
+	fmt.Println("Digite el tamano de la fila central: ")
+	fmt.Scan(&numero)
+	imprimirFigura(numero)
+}
