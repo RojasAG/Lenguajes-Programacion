@@ -1,0 +1,207 @@
+package main
+
+import (
+	"fmt"
+	"golang.org/x/exp/slices"
+)
+
+type producto struct {
+	nombre      string
+	descripcion string
+	montoVenta  int32
+}
+
+type persona struct {
+	nombre string
+	edad   int
+	cedula int
+	altura float64
+}
+
+type Personas []persona
+
+type Productos []producto
+
+var factura Productos
+
+var dataBase Personas
+
+const rangoPagoImpuestos = 20000
+const porcentajeImpuesto = 0.13
+
+const rangoMinomoAltura = 160
+
+var cantidadPersonas = len(dataBase)
+var minimaEdad = 1
+
+const mayoresDeEdad = 18
+
+func (f *Productos) agregarProducto(nom string, desc string, pre int32) {
+	idx := slices.IndexFunc(*f, func(p producto) bool { return p.nombre == nom })
+	if idx == -1 {
+		*f = append(*f, producto{nom, desc, pre})
+	} else {
+		fmt.Println("cant add existing product to the list")
+	}
+}
+
+func (f *Personas) agregarPersona(nom string, ed int, ced int, alt float64) {
+	idx := slices.IndexFunc(*f, func(p persona) bool { return p.nombre == nom })
+	if idx == -1 {
+		*f = append(*f, persona{nom, ed, ced, alt})
+	} else {
+		fmt.Println("No es posible agregar la persona existente a la lista")
+	}
+}
+
+func (f *Productos) calcularImpuestoFactura() int32 {
+	lista := filter1(*f, func(p producto) bool { //Se realiza primero la filtacion, en otra lista nueva
+		return p.montoVenta > rangoPagoImpuestos //retorna el producto en el monto de venta que sea mayor segun el rango de pago de impuestos
+	})
+	lista2 := map1(lista, func(p producto) int32 { //Con esta lista de productos haga el map
+		return int32(float64(p.montoVenta) * porcentajeImpuesto) //Toma el monto de venta y la multiplica por el porcentaje de impuesto
+	})
+	return reduce(lista2)
+}
+
+// Funcion que permite obtener el promedio de edades registradas dentro del slice
+func (f *Personas) calcularEdadPromedio() float64 {
+	cantidadPersonas := float64(len(*f))               //Se realiza un conteo de la cantidad de personas dentro del slice
+	lista := FilterGenerico(*f, func(p persona) bool { //Se recorre el slice con ayuda del filterGenerico
+		return p.edad > minimaEdad //Se agregan las edades mayores a la edad minima a una lista nueva para ser usada luego
+	})
+	lista2 := MapGenerico(lista, func(p1 persona) int { //Se toman los valores de la lista anterior que se acaba de crear, con el fin de realizar el mapeo
+		return p1.edad //Se retorna las edades de las personas
+	})
+	var sum int                   //Se crea una variable con el fin de saber cuanto suman las edades
+	for _, edad := range lista2 { //Se recorren las edades existentes para luego sumarlas
+		sum += edad
+	}
+	return float64(sum) / cantidadPersonas //Se retorna el resultado de la suma total de edades entre la cantidad de personas existentes
+}
+
+func (f *Productos) calcularMontoFactura() int32 {
+	lista := map1(*f, func(p producto) int32 { //Esta lista es nueva, MAP siempre da una lista nueva, recibe la funcion de p con producto y devuelbe un entero
+		return p.montoVenta //retorna un p.monto de venta, va agregandolo a la lista nueva uno por uno, cada monto de venta
+	})
+	return reduce(lista)
+}
+
+// funcion que permite ver cuantas personas son mas altas segun la estatura minima definida
+func (f *Personas) verCuantasPersonasSonMasAltas() int32 {
+	lista := FilterGenerico(*f, func(p1 persona) bool { //Se crea una lista nueva para ir almacenando la informacion requerida
+		return p1.altura > rangoMinomoAltura //se agregan solo aquellos datos que cumplan
+	})
+
+	return int32(len(lista)) //Se retorna solamente aquellos datos que cumplieron anteriormente
+}
+
+func (f *Personas) verCuantasPersonasSonMayoresDeEdad() int32 {
+	lista := FilterGenerico(*f, func(p1 persona) bool { //Se crea una lista nueva para ir almacenando la informacion requerida
+		return p1.edad > mayoresDeEdad //se agregan solo aquellos datos que cumplan
+	})
+
+	return int32(len(lista)) //Se retorna solamente aquellos datos que cumplieron anteriormente
+}
+
+func (f *Productos) calcularMontoFactura2() int32 { //
+	lista := map1(*f, func(p producto) int32 { //Esta lista es nueva, MAP siempre da una lista nueva, recibe la funcion de p con producto y devuelbe un entero
+		return p.montoVenta //retorna un p.monto de venta, va agregandolo a la lista nueva uno por uno, cada monto de venta
+	})
+	return reduce(lista)
+}
+
+// funciones map y filter para aplicaciones específicas
+func map1(list Productos, f func(producto) int32) []int32 { //Se recibe una lista de productos y a todos los productos se le aplica la funcion con enteros de 32int
+	mapped := make([]int32, len(list)) //Se hace una nueva lista con el tamano de la lista anterior
+	//Ventajas de un map, La lista original no se altera. Otra es que son funciones homogeneas siempre hace lo mismo
+	for i, e := range list { //Para cada elemento e indice
+		mapped[i] = f(e) //EN la nueva lista de la posicion i, dele el resultado de enteros
+	}
+	return mapped
+}
+
+// Filter hace lo mismo que Map, pero revuelve una lista con elementos que cumplan con la funcion
+func filter1(list Productos, f func(producto) bool) Productos { //Ejemplo filtre los productos que valen menor a 20.000 etc. Y los agrega a una nueva lista
+	filtered := make(Productos, 0) //Crea una nueva lista que inincia en 0
+	//Si una funcion devuelve boolean es predicado
+	for _, element := range list { //  //Se recorre la lista
+		if f(element) { //Si cumple con lo que hace la funcion
+			filtered = append(filtered, element) //Peguelo en la nueva lista
+		}
+	}
+	return filtered
+}
+
+func reduce(list []int32) int32 {
+	var result int32 = 0
+	for _, v := range list {
+		result += v
+	}
+	return result
+}
+
+func reduceGenerico(list []int) int {
+	var result int
+	for _, v := range list {
+		result += v
+	}
+	return result
+}
+
+// Construir la versión con tipos genéricos de las tres funciones anteriores map/filter para que acepten slices y funciones de cualquier otro tipo
+// AYUDA SOBRE TIPOS GENERICOS: https://gobyexample.com/generics
+
+// Funcion generica del Map, el cual permite mapear cualquier dato requerido sin importar el tipo que este sea
+func MapGenerico[P1, P2 any](list []P1, f func(P1) P2) []P2 {
+	mapped := make([]P2, len(list))
+
+	for i, e := range list {
+		mapped[i] = f(e)
+	}
+	return mapped
+
+}
+
+// Funcion generica de filter que permite filtrar cualquier dato de cualquier tipo que se desee filtrar
+func FilterGenerico[T any](list []T, f func(T) bool) []T {
+	filtered := make([]T, 0)
+
+	for _, e := range list {
+		if f(e) {
+			filtered = append(filtered, e)
+		}
+	}
+	return filtered
+}
+
+func (f *Productos) calcularEdadPromedio() int32 { //
+	lista := MapGenerico(*f, func(p producto) int32 { //Esta lista es nueva, MAP siempre da una lista nueva, recibe la funcion de p con producto y devuelbe un entero
+		return p.montoVenta //retorna un p.monto de venta, va agregandolo a la lista nueva uno por uno, cada monto de venta
+	})
+	return reduce(lista)
+}
+
+//// Probar su funcionamiento creando una lista/slice de personas y filtrando aquellas personas que sean mayores de edad
+
+func main() {
+	factura.agregarProducto("tarjeta madre", "Asus", 54200)
+	factura.agregarProducto("mouse", "alámbrico", 15000)
+	factura.agregarProducto("teclado", "gamer con luces", 30000)
+	factura.agregarProducto("memoria ssd", "2 gb", 65000)
+	factura.agregarProducto("cable video", "display port 1m", 18000)
+
+	dataBase.agregarPersona("Jesus Morales", 30, 702920622, 180)
+	dataBase.agregarPersona("Karla Hernandez", 22, 706220213, 165)
+	dataBase.agregarPersona("Safia Mora", 18, 19237292, 156)
+	dataBase.agregarPersona("Maria Mendoza", 24, 307260262, 170)
+	dataBase.agregarPersona("Samantha Caltillano", 49, 502920622, 166)
+
+	println("\n---------------------------------------------------------------------")
+	println("El monto total de la factura es de: ", factura.calcularMontoFactura())
+	println("El impuesto de la factura es de: ", factura.calcularImpuestoFactura())
+	fmt.Print("La edad promedio de las personas es de: ", dataBase.calcularEdadPromedio(), "%")
+	fmt.Print("\nCantidad de personas con altura mayor a ", rangoMinomoAltura, " cm son ", dataBase.verCuantasPersonasSonMasAltas())
+	fmt.Print("\nCantidad de personas mayores de ", mayoresDeEdad, " años son ", dataBase.verCuantasPersonasSonMayoresDeEdad(), " personas")
+	println("\n--------------------------------------------------------------------")
+}
