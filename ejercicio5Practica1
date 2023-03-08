@@ -1,0 +1,283 @@
+package main
+
+import (
+	"fmt"
+	"golang.org/x/exp/slices"
+	"sort"
+)
+
+type producto struct {
+	nombre             string
+	descripcion        string
+	montoVenta         int32
+	existencias        int32
+	existenciasMinimas int32
+}
+
+type persona struct {
+	nombre string
+	edad   int
+	cedula int
+	altura float64
+}
+
+type Personas []persona
+
+type Productos []producto
+
+var factura Productos
+
+var productos Productos
+
+var dataBase Personas
+
+var listaMinimos Productos
+
+const rangoPagoImpuestos = 20000
+const porcentajeImpuesto = 0.13
+
+const rangoMinomoAltura = 160
+
+var cantidadPersonas = len(dataBase)
+var minimaEdad = 1
+
+const mayoresDeEdad = 18
+
+func (f *Productos) agregarProducto(nom string, desc string, pre int32, exist int32, existMinimas int32) {
+	idx := slices.IndexFunc(*f, func(p producto) bool { return p.nombre == nom })
+	if idx == -1 {
+		*f = append(*f, producto{nom, desc, pre, exist, existMinimas})
+	} else {
+		fmt.Println("cant add existing product to the list")
+	}
+}
+
+func (f *Personas) agregarPersona(nom string, ed int, ced int, alt float64) {
+	idx := slices.IndexFunc(*f, func(p persona) bool { return p.nombre == nom })
+	if idx == -1 {
+		*f = append(*f, persona{nom, ed, ced, alt})
+	} else {
+		fmt.Println("No es posible agregar la persona existente a la lista")
+	}
+}
+
+func (f *Productos) calcularImpuestoFactura() int32 {
+	lista := filter1(*f, func(p producto) bool { //Se realiza primero la filtacion, en otra lista nueva
+		return p.montoVenta > rangoPagoImpuestos //retorna el producto en el monto de venta que sea mayor segun el rango de pago de impuestos
+	})
+	lista2 := map1(lista, func(p producto) int32 { //Con esta lista de productos haga el map
+		return int32(float64(p.montoVenta) * porcentajeImpuesto) //Toma el monto de venta y la multiplica por el porcentaje de impuesto
+	})
+	return reduce(lista2)
+}
+
+// Funcion que permite obtener el promedio de edades registradas dentro del slice
+func (f *Personas) calcularEdadPromedio() float64 {
+	cantidadPersonas := float64(len(*f))               //Se realiza un conteo de la cantidad de personas dentro del slice
+	lista := FilterGenerico(*f, func(p persona) bool { //Se recorre el slice con ayuda del filterGenerico
+		return p.edad > minimaEdad //Se agregan las edades mayores a la edad minima a una lista nueva para ser usada luego
+	})
+	lista2 := MapGenerico(lista, func(p1 persona) int { //Se toman los valores de la lista anterior que se acaba de crear, con el fin de realizar el mapeo
+		return p1.edad //Se retorna las edades de las personas
+	})
+	var sum int                   //Se crea una variable con el fin de saber cuanto suman las edades
+	for _, edad := range lista2 { //Se recorren las edades existentes para luego sumarlas
+		sum += edad
+	}
+	return float64(sum) / cantidadPersonas //Se retorna el resultado de la suma total de edades entre la cantidad de personas existentes
+}
+
+func (f *Productos) calcularMontoFactura() int32 {
+	lista := map1(*f, func(p producto) int32 { //Esta lista es nueva, MAP siempre da una lista nueva, recibe la funcion de p con producto y devuelbe un entero
+		return p.montoVenta //retorna un p.monto de venta, va agregandolo a la lista nueva uno por uno, cada monto de venta
+	})
+	return reduce(lista)
+}
+
+// funcion que permite ver cuantas personas son mas altas segun la estatura minima definida
+func (f *Personas) verCuantasPersonasSonMasAltas() int32 {
+	lista := FilterGenerico(*f, func(p1 persona) bool { //Se crea una lista nueva para ir almacenando la informacion requerida
+		return p1.altura > rangoMinomoAltura //se agregan solo aquellos datos que cumplan
+	})
+
+	return int32(len(lista)) //Se retorna solamente aquellos datos que cumplieron anteriormente
+}
+
+func (f *Personas) verCuantasPersonasSonMayoresDeEdad() int32 {
+	lista := FilterGenerico(*f, func(p1 persona) bool { //Se crea una lista nueva para ir almacenando la informacion requerida
+		return p1.edad > mayoresDeEdad //se agregan solo aquellos datos que cumplan
+	})
+
+	return int32(len(lista)) //Se retorna solamente aquellos datos que cumplieron anteriormente
+}
+
+func (f *Productos) calcularMontoFactura2() int32 { //
+	lista := map1(*f, func(p producto) int32 { //Esta lista es nueva, MAP siempre da una lista nueva, recibe la funcion de p con producto y devuelbe un entero
+		return p.montoVenta //retorna un p.monto de venta, va agregandolo a la lista nueva uno por uno, cada monto de venta
+	})
+	return reduce(lista)
+}
+
+// funciones map y filter para aplicaciones específicas
+func map1(list Productos, f func(producto) int32) []int32 { //Se recibe una lista de productos y a todos los productos se le aplica la funcion con enteros de 32int
+	mapped := make([]int32, len(list)) //Se hace una nueva lista con el tamano de la lista anterior
+	//Ventajas de un map, La lista original no se altera. Otra es que son funciones homogeneas siempre hace lo mismo
+	for i, e := range list { //Para cada elemento e indice
+		mapped[i] = f(e) //EN la nueva lista de la posicion i, dele el resultado de enteros
+	}
+	return mapped
+}
+
+// Filter hace lo mismo que Map, pero revuelve una lista con elementos que cumplan con la funcion
+func filter1(list Productos, f func(producto) bool) Productos { //Ejemplo filtre los productos que valen menor a 20.000 etc. Y los agrega a una nueva lista
+	filtered := make(Productos, 0) //Crea una nueva lista que inincia en 0
+	//Si una funcion devuelve boolean es predicado
+	for _, element := range list { //  //Se recorre la lista
+		if f(element) { //Si cumple con lo que hace la funcion
+			filtered = append(filtered, element) //Peguelo en la nueva lista
+		}
+	}
+	return filtered
+}
+
+func reduce(list []int32) int32 {
+	var result int32 = 0
+	for _, v := range list {
+		result += v
+	}
+	return result
+}
+
+func reduceGenerico(list []int) int {
+	var result int
+	for _, v := range list {
+		result += v
+	}
+	return result
+}
+
+// Construir la versión con tipos genéricos de las tres funciones anteriores map/filter para que acepten slices y funciones de cualquier otro tipo
+// AYUDA SOBRE TIPOS GENERICOS: https://gobyexample.com/generics
+
+// Funcion generica del Map, el cual permite mapear cualquier dato requerido sin importar el tipo que este sea
+func MapGenerico[P1, P2 any](list []P1, f func(P1) P2) []P2 {
+	mapped := make([]P2, len(list))
+
+	for i, e := range list {
+		mapped[i] = f(e)
+	}
+	return mapped
+
+}
+
+// Funcion generica de filter que permite filtrar cualquier dato de cualquier tipo que se desee filtrar
+func FilterGenerico[T any](list []T, f func(T) bool) []T {
+	filtered := make([]T, 0)
+
+	for _, e := range list {
+		if f(e) {
+			filtered = append(filtered, e)
+		}
+	}
+	return filtered
+}
+
+func (f *Productos) calcularEdadPromedio() int32 { //
+	lista := MapGenerico(*f, func(p producto) int32 { //Esta lista es nueva, MAP siempre da una lista nueva, recibe la funcion de p con producto y devuelbe un entero
+		return p.montoVenta //retorna un p.monto de venta, va agregandolo a la lista nueva uno por uno, cada monto de venta
+	})
+	return reduce(lista)
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//----------------------------------------EJERCICIO 5 de PRACTICA 1-------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+/*
+a.	A partir de la lista de productos con mínimas existencias de inventario, ampliar el inventario con la compra de más unidades de cada
+producto de esta lista hasta que cumplan con el mínimo establecido. Se sugiere crear una función denominada
+“func (l *listaProductos) aumentarInventarioDeMinimos(listaMinimos)”
+*/
+//FUncion que permite aumentar el inventario de productos minimos
+func (lis *Productos) aumentarInventarioDeMinimos(listaMinimos []producto) {
+	for _, m := range listaMinimos { //Se recorre la lista de minimos
+		cantidadFaltanteProductos := m.existenciasMinimas - m.existencias //Se saca cuanto es la cantidad que hace falta de cada producto
+		for t, p := range *lis {                                          //Se recorre la lista de productos para corroborar la cantidad
+			if p.nombre == m.nombre && cantidadFaltanteProductos > 0 { //Se busca con nombres iguales a ver si se actualiza o no
+				p.existencias += cantidadFaltanteProductos //SI se cumple se hace el incremento de cantidad de productos
+				(*lis)[t] = p                              //Se actualiza los datos
+				break                                      //Se sale del bucle
+			}
+		}
+	}
+}
+
+/*
+b.	Crear una función que ordene la lista de productos usando como llave para el ordenamiento cualquiera de los elementos de la
+estructura producto. La lista/slice debe quedar modificada al finalizar el método. Se solicita investigar y hacer uso de alguna
+función predefinida de alguna librería del lenguaje Go que ayude a resolver el problema.
+*/
+//Funcion que permite ordenar nombres de los productos
+func ordenarPorNombre(p1, p2 producto) bool {
+	return p1.nombre < p2.nombre
+}
+//Funcion que ordena los nombres de los productos con ayuda de la funcion ordenarPorNombre
+func (lis *Productos) ordenarProd() {
+	sort.Slice(*lis, func(i, j int) bool { //Usa el sort.Slice para realizar un recorrido por la lista y por tanto ordenar dichos productos por nombre
+		return ordenarPorNombre((*lis)[i], (*lis)[j]) //Se llama a la funcion para realizar el ordenado
+	})
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+func main() {
+	factura.agregarProducto("tarjeta madre", "Asus", 54200, 5, 10)
+	factura.agregarProducto("mouse", "alámbrico", 15000, 4, 5)
+	factura.agregarProducto("teclado", "gamer con luces", 30000, 8, 4)
+	factura.agregarProducto("memoria ssd", "2 gb", 65000, 7, 5)
+	factura.agregarProducto("cable video", "display port 1m", 18000, 9, 10)
+
+	productos.agregarProducto("tarjeta madre", "Asus", 54200, 5, 10)
+	productos.agregarProducto("mouse", "alámbrico", 15000, 4, 5)
+	productos.agregarProducto("teclado", "gamer con luces", 30000, 8, 4)
+	productos.agregarProducto("memoria ssd", "2 gb", 65000, 7, 5)
+	productos.agregarProducto("cable video", "display port 1m", 18000, 9, 10)
+
+	dataBase.agregarPersona("Jesus Morales", 30, 702920622, 180)
+	dataBase.agregarPersona("Karla Hernandez", 22, 706220213, 165)
+	dataBase.agregarPersona("Safia Mora", 18, 19237292, 156)
+	dataBase.agregarPersona("Maria Mendoza", 24, 307260262, 170)
+	dataBase.agregarPersona("Samantha Caltillano", 49, 502920622, 166)
+
+	println("\n---------------------------------------------------------------------")
+	println("El monto total de la factura es de: ", factura.calcularMontoFactura())
+	println("El impuesto de la factura es de: ", factura.calcularImpuestoFactura())
+	fmt.Print("La edad promedio de las personas es de: ", dataBase.calcularEdadPromedio(), "%")
+	fmt.Print("\nCantidad de personas con altura mayor a ", rangoMinomoAltura, " cm son ", dataBase.verCuantasPersonasSonMasAltas())
+	fmt.Print("\nCantidad de personas mayores de ", mayoresDeEdad, " años son ", dataBase.verCuantasPersonasSonMayoresDeEdad(), " personas")
+	println("\n--------------------------------------------------------------------")
+
+	fmt.Print(productos)
+	cantidadMinimaComponentes := FilterGenerico(factura, func(producto producto) bool {
+		return producto.existencias < producto.existenciasMinimas
+	})
+	productos.aumentarInventarioDeMinimos(cantidadMinimaComponentes)
+	fmt.Print("\n")
+	fmt.Print("\n")
+	fmt.Print("Lista de cantidades minimas actualizadas")
+	fmt.Print("\n")
+	fmt.Print(productos)
+	productos.ordenarProd()
+	fmt.Print("\n")
+	fmt.Print("\n")
+	fmt.Print("Lista de productos ya ordenada...")
+	fmt.Print("\n")
+	fmt.Print(productos)
+}
