@@ -1,0 +1,29 @@
+(*
+Estudiante: Andrey Rojas Garcia
+Carne:      2021054965
+2)	Construya una función que se llame general-sec A B. Esta función genera una secuencia de números 
+en una lista de A hasta B, donde  A y B son números enteros. Por ejemplo:
+
+generar-sec 0 5
+[0; 1; 2; 3; 4; 5]
+
+*)
+
+
+let generalSec a b =
+    [a .. b]
+
+printfn "A continuacion se le solicitaran dos valores para generar una secuencia de numeros..."
+printfn "Por favor ingrese el valor de a:"
+let input = System.Console.ReadLine()
+let a = int input
+printfn "El valor de a es: %i" a
+
+
+printfn "Por favor ingrese el valor de b:"
+let input2 = System.Console.ReadLine()
+let b = int input2
+printfn "El valor de a es: %i" b
+let generarSecuencia = generalSec a b
+printfn "%A" generarSecuencia
+
