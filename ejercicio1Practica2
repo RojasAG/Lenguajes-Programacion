@@ -1,0 +1,25 @@
+(*
+Estudiante: Andrey Rojas Garcia
+Carne:      2021054965
+
+1)	Haciendo uso de la función filter, implemente una función que a partir de una lista de cadenas representando
+frases de parámetro, filtre aquellas que contengan una palabra que el usuario indique en otro argumento (palabra completa contenida). Ej
+sub_cadenas “la” [“la casa; “el perro”; “pintando la cerca”]
+[“la casa, “pintando la cerca”]
+*)
+module Ejercicio1Practica2 =
+    
+//filtra los textos por contenido de palabras
+    let filtrarPalabras (pal:string) (lista:string list) =
+        lista
+        //|> List.map (fun (x:string) -> x.Split ' ')
+        |> List.filter (fun str -> str.Contains(pal))
+        //El filtrar palabras deberia tener una lista 
+    //Filtra las que tengan palabras que tienen esta frase, en el caso seria la de texto que el usuario elige        
+    
+    let sub_cadenas = ["la casa";"el perro";"pintando la cerca"]
+    printfn "Por favor ingrese un texto:"
+    let texto = System.Console.ReadLine()
+    printfn "La palabra que ingresó es: %s" texto
+    
+    printfn "%A" (filtrarPalabras texto sub_cadenas)
