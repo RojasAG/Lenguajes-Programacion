@@ -1,0 +1,49 @@
+(*
+Estudiante: Andrey Rojas Garcia
+Carne: 2021054965
+3)	Migrar el ejercicio realizado en Go sobre facturas con 
+listas de productos haciendo énfasis en la implementación de 
+las funciones para calcular el monto a pagar por la factura 
+completa y el monto a pagar por concepto del 13% de impuesto 
+de venta para aquellos productos que deban pagarlo según criterio 
+de selección.
+*)
+
+type producto = { //Se crea un tipo de producto para ingresar detalles de cada uno
+    nombre: string  //Nombre del producto
+    descripcion: string //Una leve descripcion del producto
+    montoVenta: int32 //Precio al que se estaria vendiendo
+}
+type Productos = producto list //Se realiza la asignacion de productos hacia una lista
+let facturaProductos = ref [] //Se crea una lista de productos
+let rangoPagoImpuestos = 20000 //rango del monto de impuesto de productos
+let porcentajeImpuesto = 0.13 //Porcentaje de impuesto a aplicar a los productos
+
+//Funcion que agrega los productos
+let agregarProducto nomb descu prec =
+    let exisProducto = !facturaProductos |> List.exists (fun p -> p.nombre = nomb) //Se verifica que exista
+    if not exisProducto then //Si no existe se crea el producto y se agrega los valores deseados
+        let nuevoProducto = { nombre = nomb; descripcion = descu; montoVenta = prec }
+        facturaProductos := nuevoProducto :: !facturaProductos
+    else
+        printfn "No se puede agregar un producto existente a la lista"
+
+//Funcion para calcular el monto de la factura
+let calcularMontoFactura () =
+    !facturaProductos |> List.map (fun p -> p.montoVenta) |> List.sum
+
+//Funcion para calcular el impuesto de la factura
+let calcularImpuestoFactura () =
+    !facturaProductos
+    |> List.filter (fun p -> p.montoVenta > rangoPagoImpuestos)
+    |> List.map (fun p -> int32(float p.montoVenta * porcentajeImpuesto))
+    |> List.sum
+
+agregarProducto "tarjeta madre" "Asus" 54200
+agregarProducto "mouse" "alámbrico" 15000
+agregarProducto "teclado" "gamer con luces" 30000
+agregarProducto "memoria ssd" "2 gb" 65000
+agregarProducto "cable video" "display port 1m" 18000
+
+printfn "El monto total de la factura es de: %d" (calcularMontoFactura ())
+printfn "El impuesto de la factura es de: %d" (calcularImpuestoFactura ())
