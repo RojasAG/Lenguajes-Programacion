@@ -38,7 +38,7 @@ let extender (ruta: _ list) grafo =
     |> List.map (fun (x,peso) -> if (miembro x ruta) then [] else (x,peso)::ruta )
     |> List.filter (fun x -> x <> [])
 
-//Fucion que recibe modificacion                   
+//Se modifica esta funcion para obtener ruta corta                  
 let rec prof_aux fin (rutas: ('a * int) list list) grafo =
     if rutas = [] then
         []
@@ -49,7 +49,8 @@ let rec prof_aux fin (rutas: ('a * int) list list) grafo =
         prof_aux fin (List.append (extender rutas.Head grafo) rutas.Tail) grafo
     else
         []
-//Funcion que recibe modificacion
+
+//Se recorre con la ruta mas corta y aqui se modifica de la original
 let prof ini fin grafo =
     prof_aux fin [[(ini,0)]] grafo
         |> List.sortBy (fun ruta -> List.fold (fun acc (_,peso) -> acc + peso) 0 ruta)
