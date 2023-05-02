@@ -1,0 +1,16 @@
+//1)	Implemente un predicado que, a partir de una lista de cadenas de parámetro, filtre aquellas que contengan una subcadena que el usuario indique en otro argumento. Ej
+
+//sub_cadenas(“la”, [“la casa, “el perro”, “pintando la cerca”],Filtradas).
+//True
+//Filtradas = [“la casa, “pintando la cerca”]
+
+
+filtrar_subcadenadatos(SubcadenaDatos, ListaCadenasDatos, PalabrasFiltradas) :-
+    include(subcadenadatos(SubcadenaDatos), ListaCadenasDatos, PalabrasFiltradas).
+
+subcadenadatos(SubcadenaDatos, CadenaDatos) :-
+    sub_atom(CadenaDatos, _, _, _, SubcadenaDatos).
+
+
+//LLAMAR ASI:
+//filtrar_subcadenadatos("la", ["la casa", "el perro", "pintando la cerca"], Filtradas).
