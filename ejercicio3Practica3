@@ -1,0 +1,27 @@
+//3)	Implemente la función aplanar. Esta función recibe una lista con múltiples listas anidadas como elementos y devuelve una lista 
+//con los mismos elementos de manera lineal (sin listas). Ej: 
+//aplanar([1,2,[3,[4,5],[6,7]]],X).
+//True
+//X=[1,2,3,4,5,6,7].
+
+
+
+aplanar([], []).
+aplanar([X|Xs], L) :-
+    is_list(X),
+    aplanar(X, L1),
+    aplanar(Xs, L2),
+    append(L1, L2, L).
+aplanar([X|Xs], [X|L]) :-
+    \+ is_list(X),
+    aplanar(Xs, L).
+
+//Usar asi:
+//aplanar([1,2,[3,[4,5],[6,7]]],[1,2,3,4,5,6,7,8]).
+//false.
+
+//aplanar([1,2,[3,[4,5],[6,7]]],[1,2,3,4,5,6,7]).
+//true. 
+
+//aplanar([1,2,[3,[4,5],[6,7]]],M).
+//M = [1, 2, 3, 4, 5, 6, 7] .
